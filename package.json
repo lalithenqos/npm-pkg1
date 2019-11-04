@@ -1,0 +1,19 @@
+{
+  "name": "@flavorcloud/fc-logger",
+  "version": "1.0.0",
+  "description": "Logger library built by Flavorcloud",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "author": "flavorcloud",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lalithenqos/npm-pkg1.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lalithenqos/npm-pkg1/issues"
+  },
+  "homepage": "https://github.com/lalithenqos/npm-pkg1#readme"
+}
