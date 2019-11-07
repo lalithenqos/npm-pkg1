@@ -21,3 +21,4 @@ npm-debug.log
 .build/dist
 /nbproject/
 package-lock.json
+/dist/*
