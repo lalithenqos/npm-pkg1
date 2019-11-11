@@ -3,7 +3,7 @@ import { ValidObject } from './types';
 let RotatingFileStream = require('bunyan-rotating-file-stream');
 let appRoot = require('app-root-path') + '/';
 let LogSerializer = require('./logSerializer');
-var S3StreamLogger = require('s3-streamlogger-daily').S3StreamLogger;
+var S3StreamLogger = require('s3-streamlogger').S3StreamLogger;
 
 export class BunyanClient {
   name: string;
@@ -25,15 +25,14 @@ export class BunyanClient {
       this.totalSize = options.totalSize || '500m';
       this.logFilePath = logFilePath || appRoot;
       this.streamInfo = {
-        target: 'local'
+        target: 'console'
       }
       if(options.streamInfo) {
           if(options.streamInfo.target == 's3') {
-              if(options.streamInfo.bucket && options.streamInfo.access_key_id && options.streamInfo.secret_access_key){
+              if(options.streamInfo.bucket && options.streamInfo.access_key_id && options.streamInfo.secret_access_key)
                 this.streamInfo = options.streamInfo;
-                console.log('-----------------Stream Info set to S3...2.0.13');
-              }
-          }
+          } else if(options.streamInfo.target == 'local')
+            this.streamInfo.target = options.streamInfo.target;
       }
       console.log(this.streamInfo);
   }
@@ -83,7 +82,6 @@ export class BunyanClient {
   }
 
   getStreamObj(identifier: String) {
-      console.log('Meth: getStreamObj();');
       let stream: ValidObject;
       if(this.streamInfo.target == 's3') {
           let streamParams: ValidObject = {
@@ -97,10 +95,9 @@ export class BunyanClient {
           console.log(JSON.stringify(streamParams, null, 4));
           stream = new S3StreamLogger(streamParams);
           stream.on('error', function(err:Error|null){
-            // there was an error!
             console.log('BUNYANCLIENT - S3 logger - Failure', err);
         });
-      } else {
+      } else if(this.streamInfo.target == 'local') {
           let streamParams: ValidObject = {
               path: this.logFilePath + `${identifier}.log`,
               period: this.period,
@@ -113,6 +110,12 @@ export class BunyanClient {
           }
           console.log(JSON.stringify(streamParams, null, 4));
           stream = new RotatingFileStream(streamParams);
+      } else {
+            if(identifier == 'trace' || identifier == 'info' || identifier == 'debug')
+                stream = process.stdout;
+            else
+                stream = process.stderr;
+            console.log('Stream set to CONSOLE out/err for IDENTIFIER: ', identifier);
       }
     return stream;
   }

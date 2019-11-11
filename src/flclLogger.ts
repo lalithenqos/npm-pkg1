@@ -17,7 +17,6 @@ export class FlclLogger {
   requestId?: string;
   flclMsgController?: FlclMsgController;
   constructor(options: ValidObject) {
-    console.log('2.0.13');
     if(!options.logRootPath)
         options.logRootPath = DEFAULT_LOG_ROOT_PATH;
     if(options.requestId)
