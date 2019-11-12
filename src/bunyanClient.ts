@@ -34,7 +34,6 @@ export class BunyanClient {
           } else if(options.streamInfo.target == 'local')
             this.streamInfo.target = options.streamInfo.target;
       }
-      console.log(this.streamInfo);
   }
 
   createLogger() {
@@ -43,40 +42,45 @@ export class BunyanClient {
           return this.logger;
       } else {
           console.log('BunyanClient: CreateLogger -> Creating new logger object...');
-          this.logger = Bunyan.createLogger({
-              name: this.name,
-              serializers: {
-                  req: new LogSerializer().req,
-                  res: new LogSerializer().res,
-                  err: new LogSerializer().err,
-              },
-              streams: [
-                  {
-                      level: 30,
-                      stream: this.getStreamObj('info')
-                  },
-                  {
-                      level: 50,
-                      stream: this.getStreamObj('error')
-                  },
-                  {
-                      level: 20,
-                      stream: this.getStreamObj('debug')
-                  },
-                  {
-                      level: 10,
-                      stream: this.getStreamObj('trace')
-                  },
-                  {
-                      level: 40,
-                      stream: this.getStreamObj('warn')
-                  },
-                  {
-                      level: 60,
-                      stream: this.getStreamObj('fatal')
-                  }
-              ],
-          });
+          let bunyanOptions = {
+                name: this.name,
+                serializers: {
+                    req: new LogSerializer().req,
+                    res: new LogSerializer().res,
+                    err: new LogSerializer().err,
+                },
+                streams: [
+                    {
+                        level: 10,
+                        stream: this.getStreamObj('trace')
+                    }
+                ]
+            };
+            if(this.streamInfo.target !== 'console') {
+                bunyanOptions.streams.push({
+                    level: 30,
+                    stream: this.getStreamObj('info')
+                },
+                {
+                    level: 50,
+                    stream: this.getStreamObj('error')
+                },
+                {
+                    level: 20,
+                    stream: this.getStreamObj('debug')
+                },
+                {
+                    level: 40,
+                    stream: this.getStreamObj('warn')
+                },
+                {
+                    level: 60,
+                    stream: this.getStreamObj('fatal')
+                });
+            } else {
+                console.log('Mainting only one stream, TRACE');
+            };
+          this.logger = Bunyan.createLogger(bunyanOptions);
           return this.logger;
       }
   }
@@ -92,7 +96,6 @@ export class BunyanClient {
               rotate_every: this.streamInfo.rotate_every || "day",
               upload_every: this.streamInfo.upload_every || 20*1000 //20 seconds
           };
-          console.log(JSON.stringify(streamParams, null, 4));
           stream = new S3StreamLogger(streamParams);
           stream.on('error', function(err:Error|null){
             console.log('BUNYANCLIENT - S3 logger - Failure', err);
@@ -108,14 +111,12 @@ export class BunyanClient {
               gzip: false,
               shared: true,
           }
-          console.log(JSON.stringify(streamParams, null, 4));
           stream = new RotatingFileStream(streamParams);
       } else {
             if(identifier == 'trace' || identifier == 'info' || identifier == 'debug')
                 stream = process.stdout;
             else
                 stream = process.stderr;
-            console.log('Stream set to CONSOLE out/err for IDENTIFIER: ', identifier);
       }
     return stream;
   }

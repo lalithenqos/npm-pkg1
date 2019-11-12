@@ -13,6 +13,7 @@
         ],
         "esModuleInterop": true,
         "inlineSourceMap": true,
-        "declaration": true
+        "declaration": true,
+        "declarationDir": "./dist/declarations"
     }
 }
