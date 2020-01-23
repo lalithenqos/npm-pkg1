@@ -15,20 +15,25 @@ let CUSTOM_LEVELS = {
 export class FlclLogger {
   logger: ValidObject; //Bunyun;
   requestId?: string;
+  parentRequestId?: string;
+  forwardedRequestId?: string;
   flclMsgController?: FlclMsgController;
   constructor(options: ValidObject) {
-    if(!options.logRootPath)
-        options.logRootPath = DEFAULT_LOG_ROOT_PATH;
-    if(options.requestId)
-        this.setRequestId(options.requestId);
-    
-    if(options.errorMsgCategoryList)
-        globals.errorMsgCategoryList = options.errorMsgCategoryList;
-    
-    this.logger = new BunyanClient(options.logRootPath, options).createLogger();
-    this.info({ identifier: 'flclLogger-instance', data: { msg: 'New Flcl-logger instance has been created!' } });
-    this.bindCustomLevelLogs();
-    
+      if(!options.logRootPath)
+          options.logRootPath = DEFAULT_LOG_ROOT_PATH;
+      if(options.requestId)
+          this.setRequestId(options.requestId);
+      if(options.parentRequestId)
+          this.parentRequestId = options.parentRequestId;
+      if(options.forwardedRequestId)
+          this.forwardedRequestId = options.forwardedRequestId;
+      
+      if(options.errorMsgCategoryList)
+          globals.errorMsgCategoryList = options.errorMsgCategoryList;
+      
+      this.logger = new BunyanClient(options.logRootPath, options).createLogger();
+      this.info({ identifier: 'flclLogger-instance', propertyName: 'Logger Instantiation', data: { msg: 'New Flcl-logger instance has been created!' } });
+      this.bindCustomLevelLogs();
   }
 
   bindCustomLevelLogs() {
@@ -62,21 +67,35 @@ export class FlclLogger {
     return this.requestId;
   }
 
+  private getParentRequestId() {
+    return this.parentRequestId;
+  }
+
+  private getForwardedRequestId() {
+    return this.forwardedRequestId;
+  }
+
   private structurizeArg(data: ValidObject) {
     try {
-      let requestId = this.getRequestId();
-      if (data) {
-        if (typeof data == 'object') {
-          data = this.cleanObj(data);
-          data.requestId = requestId;
-        } else if (typeof data == 'string' || typeof data == 'number') {
-          let msgText = data;
-          data = {
-            message: msgText,
-            requestId: requestId,
-          };
-        };
-      }
+        let requestId = this.getRequestId();
+        let parentRequestId = this.getParentRequestId();
+        let forwardedRequestId = this.getForwardedRequestId();
+        if (data) {
+            if (typeof data == 'object') {
+                data = this.cleanObj(data);
+                data.requestId = requestId;
+                data.parentRequestId = parentRequestId;
+                data.forwardedRequestId = forwardedRequestId;
+            } else if (typeof data == 'string' || typeof data == 'number') {
+                let msgText = data;
+                data = {
+                    FlclMsg: msgText,
+                    requestId: requestId,
+                    parentRequestId: parentRequestId,
+                    forwardedRequestId: forwardedRequestId
+                };
+            };
+        }
     } catch (e) {
       console.error(e);
     } finally {
@@ -102,11 +121,11 @@ export class FlclLogger {
           else
             cleanedObj[key] = propVal;
         } else {
-          cleanedObj.message = cleanedObj.message || {};
-          cleanedObj.message[key] = propVal;
+          cleanedObj.FlclMsg = cleanedObj.FlclMsg || {};
+          cleanedObj.FlclMsg[key] = propVal;
         }
       });
-      cleanedObj.message = this._getStringified(cleanedObj.message);
+      cleanedObj.FlclMsg = this._getStringified(cleanedObj.FlclMsg);
     } catch (e) {
       cleanedObj['logdata-parse-error'] = true;
       cleanedObj['logdata-parse-error-msg'] = e.message;
@@ -158,11 +177,13 @@ export class FlclLogger {
     let rootLevels = [
       'userAgent', 'host',
       'req', 'res', 'err',
-      'appId', 'userId', 'customerName', 'companyName', 'customerId', 'companyName', 'orderReference', 'fromCity', 'fromCountry', 'toCity', 'toCountry',
+      'appId', 'userId', 'customerName', 'companyName', 'customerId', 'companyName', 'orderReference', 'fromCity', 'fromCountry', 'toCity', 'toCountry', 'route', 'FlclMsg',
       'className', 'class', 'methodName', 'propertyValue', 'propertyName', 'level',
-      'requestId', 'isNewRequest', 'isEndOfResponse', 'inTime', 'elapsedTime',
+      'requestId', 'parentRequestId', 'forwardedRequestId', 'earlierRequestId', 'isNewRequest', 'isEndOfResponse', 'inTime', 'inTimeDate', 'elapsedTime',
       'workerName', 'action',
-      'errorType', 'identifier'
+      'errorType', 'identifier', 'carrierList', 'carrierList2', 'rateAPIFlag', 'rateEntryLog',
+      'newOrder', 'orderRateProvider', 'orderGateway', 'processedOrderStatus', 'usedFlavorCloudRate', 'carrier', 'shippingLineDetail', 'order',
+      'shipmentLogContext', 'browserLog', 'severity', 'msgFromContext4', 'xShopifyOrderId', 'xShopifyDomain', 'xShopifyTopic', 'awsRequestId'
     ];
     if (rootLevels.indexOf(key) != -1)
       return true;
