@@ -3,7 +3,7 @@ import { FlclMsgController } from './flclMsgHandler';
 export declare class FlclLogger {
     logger: ValidObject;
     requestId?: string;
-    parentRequestId?: string;
+    rootRequestId?: string;
     forwardedRequestId?: string;
     flclMsgController?: FlclMsgController;
     constructor(options: ValidObject);
@@ -11,7 +11,7 @@ export declare class FlclLogger {
     private getCustomLevel;
     setRequestId(requestId: string): void;
     private getRequestId;
-    private getParentRequestId;
+    private getrootRequestId;
     private getForwardedRequestId;
     private structurizeArg;
     private cleanObj;

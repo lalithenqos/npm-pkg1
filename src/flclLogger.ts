@@ -15,7 +15,7 @@ let CUSTOM_LEVELS = {
 export class FlclLogger {
   logger: ValidObject; //Bunyun;
   requestId?: string;
-  parentRequestId?: string;
+  rootRequestId?: string;
   forwardedRequestId?: string;
   flclMsgController?: FlclMsgController;
   constructor(options: ValidObject) {
@@ -23,8 +23,8 @@ export class FlclLogger {
           options.logRootPath = DEFAULT_LOG_ROOT_PATH;
       if(options.requestId)
           this.setRequestId(options.requestId);
-      if(options.parentRequestId)
-          this.parentRequestId = options.parentRequestId;
+      if(options.rootRequestId)
+          this.rootRequestId = options.rootRequestId;
       if(options.forwardedRequestId)
           this.forwardedRequestId = options.forwardedRequestId;
       
@@ -67,8 +67,8 @@ export class FlclLogger {
     return this.requestId;
   }
 
-  private getParentRequestId() {
-    return this.parentRequestId;
+  private getrootRequestId() {
+    return this.rootRequestId;
   }
 
   private getForwardedRequestId() {
@@ -78,20 +78,20 @@ export class FlclLogger {
   private structurizeArg(data: ValidObject) {
     try {
         let requestId = this.getRequestId();
-        let parentRequestId = this.getParentRequestId();
+        let rootRequestId = this.getrootRequestId();
         let forwardedRequestId = this.getForwardedRequestId();
         if (data) {
             if (typeof data == 'object') {
                 data = this.cleanObj(data);
                 data.requestId = requestId;
-                data.parentRequestId = parentRequestId;
+                data.rootRequestId = rootRequestId;
                 data.forwardedRequestId = forwardedRequestId;
             } else if (typeof data == 'string' || typeof data == 'number') {
                 let msgText = data;
                 data = {
                     FlclMsg: msgText,
                     requestId: requestId,
-                    parentRequestId: parentRequestId,
+                    rootRequestId: rootRequestId,
                     forwardedRequestId: forwardedRequestId
                 };
             };
@@ -179,7 +179,7 @@ export class FlclLogger {
       'req', 'res', 'err',
       'appId', 'userId', 'customerName', 'companyName', 'customerId', 'companyName', 'orderReference', 'fromCity', 'fromCountry', 'toCity', 'toCountry', 'route', 'FlclMsg',
       'className', 'class', 'methodName', 'propertyValue', 'propertyName', 'level',
-      'requestId', 'parentRequestId', 'forwardedRequestId', 'earlierRequestId', 'isNewRequest', 'isEndOfResponse', 'inTime', 'inTimeDate', 'elapsedTime',
+      'requestId', 'rootRequestId', 'forwardedRequestId', 'earlierRequestId', 'isNewRequest', 'isEndOfResponse', 'inTime', 'inTimeDate', 'elapsedTime',
       'workerName', 'action',
       'errorType', 'identifier', 'carrierList', 'carrierList2', 'rateAPIFlag', 'rateEntryLog',
       'newOrder', 'orderRateProvider', 'orderGateway', 'processedOrderStatus', 'usedFlavorCloudRate', 'carrier', 'shippingLineDetail', 'order',
